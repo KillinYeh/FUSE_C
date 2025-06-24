@@ -1,0 +1,17 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I/usr/include/fuse",
+      "-D_FILE_OFFSET_BITS=64",
+      "-pthread",
+      "-o",
+      "pcyfs",
+      "pcyfs.c"
+    ],
+    "directory": "/home/killinyeh/project/FUSE_C",
+    "file": "/home/killinyeh/project/FUSE_C/pcyfs.c",
+    "output": "/home/killinyeh/project/FUSE_C/pcyfs"
+  }
+]
