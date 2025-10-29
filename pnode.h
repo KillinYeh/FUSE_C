@@ -31,18 +31,14 @@ struct pnode_list
 //use to track pnode of Hashma
 struct HashNode
 {
-
-        pnode_t* node; // node->id is key
+        pnode_t* node; // node->name is hash key
         HashNode_t *next ;
-
 };
 
 struct HashMap
 {
-
         int size;
         HashNode_t** table;
-
 };
 
 #endif

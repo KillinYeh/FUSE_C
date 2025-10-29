@@ -56,7 +56,7 @@ void put_HashNode(HashMap * map , pnode_t* node)
 	{
 
 		HashNode_t* new_node =(HashNode_t *) malloc( sizeof(HashNode_t) );
-		new_node->node = node; // shallow copy
+		new_node->node = node;
 		new_node->next = NULL;
 
 		head->next = new_node;
@@ -68,7 +68,7 @@ void put_HashNode(HashMap * map , pnode_t* node)
 		{
 			pt = pt->next;
 		}
-		HashNode_t* new_node = malloc( sizeof(HashNode_t) );
+		HashNode_t* new_node =(HashNode_t *) malloc( sizeof(HashNode_t) );
 		new_node->node = node;
 		new_node->next = NULL;
 		pt->next = new_node;
@@ -79,14 +79,10 @@ HashNode_t * get_HashNode_by_path(HashMap * map, const char* path)
 {
 	int key = calculate_key_by_path(path);
 	key = key % (MapSize);
-	HashNode_t* pt = map->table[key];  // corresponding head of Hashmap  
+	if(!map->table[key]->next) return NULL;
+	HashNode_t* pt = map->table[key]->next;  // corresponding real head of Hashmap  
 	while(pt != NULL)
 	{
-		if (pt->node == NULL)
-		{
-			pt = pt -> next;
-			continue;
-		}
 		if( strcmp( pt->node->name , path ) == 0 )
 		{
 			return pt;
@@ -100,19 +96,12 @@ int remove_HashNode_by_path(HashMap * map, const char* path)
 {
 	int key = calculate_key_by_path(path);
 	key = key % (map->size);
+	if(!map->table[key]->next) return 0;
 
-	HashNode_t* head = map->table[key];
-
-	HashNode_t* pt = head;
-	HashNode_t* prev = NULL;
+	HashNode_t* prev = map->table[key];
+	HashNode_t* pt = prev->next;
 	while(pt != NULL)
 	{
-		if(pt->node == NULL)
-		{
-			prev = pt;
-			pt = pt-> next;
-			continue;
-		}
 		if( strcmp( pt->node->name , path ) == 0 )
 		{
 			prev->next = pt->next;
@@ -131,16 +120,10 @@ void remove_child_from_parent(pnode_t * parent_pnode , pnode_t * child_node)
 {
 	pnode_list* prev = NULL;
 	pnode_list* head = parent_pnode->child_head;
-	
-	pnode_list* pt = head;
+	if(!head->next) return;
+	pnode_list* pt = head->next;
 	while(pt != NULL)
 	{
-		if(pt -> node == NULL )
-		{
-			prev = pt;
-			pt = pt->next;
-			continue;
-		}
 		if(pt->node->id == child_node->id)  //identify node.id to remove specify node 
 		{
 			prev->next = pt->next;
@@ -178,7 +161,7 @@ pnode_t* find_parent_pnode_by_path(HashMap* map , const char* path)
 	
 	if(parent_path == copy_path) //parent is root
 	{	
-		*(parent_path + 1)  = '\0'; //parent is not a root
+		*(parent_path + 1)  = '\0';
 		printf("parent is root ! print parent_path = %s \n" ,parent_path);
 		HashNode_t* HashNode = get_HashNode_by_path(map,parent_path);
 		if(HashNode != NULL) return HashNode->node;
@@ -255,7 +238,7 @@ static int pcyfs_readdir( const char *path, void *buffer, fuse_fill_dir_t filler
     		st.st_ino = pt->node->id; // in filler function, FUSE only reference st_ino & st_mode.
     		st.st_mode = ( pt->node->mode );
 
-		char* last_name = strrchr(pt->node->name , '/');  // warning ! cat't not put the path(any file name with "/") into filler function 
+		char* last_name = strrchr(pt->node->name , '/');  // warning ! can not put the path(any file name with "/") into filler function 
 		last_name ++; // remove "/"
 		printf("readdir suucess ! name = %s , st_ino = %ld , st_mode = %d \n",last_name , st.st_ino , st.st_mode);
     		filler(buffer, last_name, &st , 0);	
@@ -276,7 +259,7 @@ static int pcyfs_open(const char *path, struct fuse_file_info *fi)
 
 	fi->fh =(uint64_t) node; //save pnode info into fh
 
-	pnode_t* test = (pnode_t*) fi->fh;	
+	pnode_t* test = (pnode_t*) fi->fh; 	
 	
 	printf("open success ! file name = %s , with file id = %ld \n", test->name , test->id ); 
 	return 0;
@@ -449,4 +432,5 @@ int main(int argc,char *argv[])
 	printf("root pnode_id = %ld",root->id);
 
 	return fuse_main(argc,argv,&operations,NULL);
+
 }
